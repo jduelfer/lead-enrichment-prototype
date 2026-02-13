@@ -1,0 +1,22 @@
+[
+    {
+        "id": "lead_001",
+        "email": "sarah.connor@sky-net.org",
+        "raw_note": "We are a cybersecurity firm based in London with about 250 employees. Looking to automate our threat response."
+    },
+    {
+        "id": "lead_002",
+        "email": "jdoe@acme-baking.com",
+        "raw_note": "Family owned bakery in Ohio. We need a firewall for our wifi."
+    },
+    {
+        "id": "lead_003",
+        "email": "tech_team@fintech-unicorn.io",
+        "raw_note": "Series B Fintech startup, heavily regulated. 50-100 seats needed. We use AWS."
+    },
+    {
+        "id": "lead_004",
+        "email": "unknown@ghost.com",
+        "raw_note": "Interested in pricing."
+    }
+]
