@@ -63,6 +63,8 @@ def enrich(raw_lead: RawLead):
     """
     enriched_lead = EnrichedLead(id=raw_lead.id, email=raw_lead.email)
     enriched_lead.enriched_data = enrich_data(raw_lead.raw_note)
+    enriched_lead.calculate_score()
+    enriched_lead.determine_crm_action()
     return enriched_lead
     
 def run():
