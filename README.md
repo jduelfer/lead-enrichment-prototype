@@ -16,3 +16,9 @@ These instructions have only been validated on WSL for Linux Ubuntu 20.04.6 LTS 
     ```
 7. Reactivate the virtualenv: `source .venv/bin/activate`
 8. Test installation by running `python3.9 test.py`. You should get a nice poem to think about.
+
+## Usage Instructions
+From the root of the project, simply run the following to use all defaults:
+```bash
+python3.9 main.py
+```
