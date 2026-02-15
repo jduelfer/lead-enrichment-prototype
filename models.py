@@ -67,10 +67,11 @@ class EnrichedLead(BaseModel):
         Increments score if the extracted company size
         TODO thresholds could be integer keys with scores as values
         """
-        if self.enriched_data.size > 100:
-            self.score += 25
-        elif self.enriched_data.size > 10:
-            self.score += 10
+        if self.enriched_data.size != None:
+            if self.enriched_data.size > 100:
+                self.score += 25
+            elif self.enriched_data.size > 10:
+                self.score += 10
 
     def calculate_score(self):
         if self.enriched_data != None:

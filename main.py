@@ -45,14 +45,23 @@ def enrich(raw_lead: RawLead):
     :param raw_lead: web-form submitted lead
     :type raw_lead: RawLead
     """
+    lead_exception = None
     enriched_lead = EnrichedLead(id=raw_lead.id, email=raw_lead.email)
-    print("Enriching Lead Data for " + enriched_lead.id + "...")
-    enriched_lead.enrich_data(raw_lead.raw_note, ENRICHMENT_PROMPT, ENRICHMENT_ASSUMPTIONS)
-    enriched_lead.calculate_score()
-    enriched_lead.determine_crm_action()
-    print("Evaluating Meaningful Intent...")
-    enriched_lead.eval_meaningful_intent(MEANINGFUL_INTENT_PROMPT)
-    return enriched_lead
+    try:
+        print("Enriching Lead Data for " + enriched_lead.id + "...")
+        enriched_lead.enrich_data(raw_lead.raw_note, ENRICHMENT_PROMPT, ENRICHMENT_ASSUMPTIONS)
+    except Exception as e:
+        lead_exception = e
+
+    if enriched_lead.enriched_data != None:
+        enriched_lead.calculate_score()
+        enriched_lead.determine_crm_action()
+        try:
+            print("Evaluating Meaningful Intent...")
+            enriched_lead.eval_meaningful_intent(MEANINGFUL_INTENT_PROMPT)
+        except Exception as e:
+            lead_exception = e
+    return enriched_lead, lead_exception
     
 def run():
     lead_data = load()
@@ -64,8 +73,25 @@ def run():
     # TODO: with extra time, we could prompt the user to review and "fix" any
     # pieces of invalid data before continuing onto enrichment.
 
-    # TODO: expand to list - single lead for testing
-    enriched_lead = enrich(raw_leads[0])
-    pprint.pp(enriched_lead.model_dump(mode='json'))
+    enriched_leads = []
+    requiring_review = []
+    for raw_lead in raw_leads:
+        enriched_lead, lead_exception = enrich(raw_lead)
+        if lead_exception != None:
+            print("Issue encountered enriching lead.")
+            print(lead_exception)
+            requiring_review.append(enriched_lead) 
+        else:
+            print("Lead correctly enriched:")
+            pprint.pp(enriched_lead.model_dump(mode='json'))
+            enriched_leads.append(enriched_lead)
 
-run()
+    print("------------- Final Result -------------")
+    print("Leads correctly enriched: " + str(len(enriched_leads)) + " of " + str(len(raw_leads)))
+    print("Leads requiring manual review: " + str(len(requiring_review)))
+    result = [enriched_lead.model_dump(mode='json') for enriched_lead in enriched_leads]
+    pprint.pp(result)
+    return json.dumps(result)
+
+crm_data = run()
+# TODO: Integration with CRM system(s)
