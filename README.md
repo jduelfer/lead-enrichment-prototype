@@ -26,11 +26,11 @@ python3.9 main.py
 ## Timebox and Next Steps
 Given the time-box of 3-4 hours, my focus was on the core problem of enriching lead data via an LLM and validating an initial prototype. Future "backend dev" tasks to professionalize this agent would be:
 1. Support command line arguments for the following:
-  - `file`: easily load alternative data sets by specifying a path
-  - `prompts`: support customization of prompts 
+    - `file`: easily load alternative data sets by specifying a path
+    - `prompts`: support customization of prompts 
 2. Improved scoring data models to better support configuration:
-  - first step would be key/value dicts, such as `industry => score`
-  - next step would be to load all scoring as its own model, such as an easily editable JSON file or similar.
+    - first step would be key/value dicts, such as `industry => score`
+    - next step would be to load all scoring as its own model, such as an easily editable JSON file or similar.
 3. Abstract _all_ configuration into a loadable object that would easily support an "Admin Portal" that could allow the Agent to be updated without pushing code and by super users.
 4. For invalid leads (whether malformed JSON or failed responses during enrichment) prompt the user to manually evaluate and fix (prompt inputs, for example),
     - Futher down the line, these could be stored for review in the "Admin Portal" asynchronously.
