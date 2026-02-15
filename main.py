@@ -48,7 +48,6 @@ def enrich(raw_lead: RawLead):
     lead_exception = None
     enriched_lead = EnrichedLead(id=raw_lead.id, email=raw_lead.email)
     try:
-        print("Enriching Lead Data for " + enriched_lead.id + "...")
         enriched_lead.enrich_data(raw_lead.raw_note, ENRICHMENT_PROMPT, ENRICHMENT_ASSUMPTIONS)
     except Exception as e:
         lead_exception = e
@@ -57,7 +56,6 @@ def enrich(raw_lead: RawLead):
         enriched_lead.calculate_score()
         enriched_lead.determine_crm_action()
         try:
-            print("Evaluating Meaningful Intent...")
             enriched_lead.eval_meaningful_intent(MEANINGFUL_INTENT_PROMPT)
         except Exception as e:
             lead_exception = e
@@ -82,8 +80,6 @@ def run():
             print(lead_exception)
             requiring_review.append(enriched_lead) 
         else:
-            print("Lead correctly enriched:")
-            pprint.pp(enriched_lead.model_dump(mode='json'))
             enriched_leads.append(enriched_lead)
 
     print("------------- Final Result -------------")

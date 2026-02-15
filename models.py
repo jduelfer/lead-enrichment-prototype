@@ -1,4 +1,3 @@
-import json
 from google import genai
 from pydantic import BaseModel, PositiveInt
 from typing import Optional
@@ -103,6 +102,6 @@ class EnrichedLead(BaseModel):
             intent = MeaningfulIntent.model_validate_json(response.text)
             if (intent.is_meaningful):
                 self.score += 10
-                print("Intent detected: " + intent.reasoning)
+                print("Intent detected for " + self.id + ": "  + intent.reasoning)
             else:
-                print("No intent detected for this lead: " + intent.reasoning)
+                print("No intent detected for " + self.id + ": " + intent.reasoning)
