@@ -1,3 +1,4 @@
+import json
 from google import genai
 from pydantic import BaseModel, PositiveInt
 from typing import Optional
@@ -7,6 +8,7 @@ VALUABLE_INDUSTRIES = ["Fintech"]
 SALES_SCORE_THRESHOLD = 70
 MARKETING_ROUTE = "marketing_route"
 PRIORITY_SALES_ROUTE = "PRIORITY_sales_route"
+LLM_MODEL = "gemini-3-flash-preview"
 
 client = genai.Client()
 
@@ -19,6 +21,10 @@ class EnrichedData(BaseModel):
     industry: Optional[str]
     size: Optional[PositiveInt]
     intent: Optional[str]
+
+class MeaningfulIntent(BaseModel):
+    is_meaningful: bool
+    reasoning: Optional[str]
 
 class EnrichedLead(BaseModel):
     id: str
@@ -37,7 +43,7 @@ class EnrichedLead(BaseModel):
         :type raw_note: str
         """
         response = client.models.generate_content(
-            model="gemini-3-flash-preview",
+            model=LLM_MODEL,
             contents=prompt + raw_note + assumptions,
             config={
                 "response_mime_type": "application/json",
@@ -77,3 +83,25 @@ class EnrichedLead(BaseModel):
         """
         if self.score > SALES_SCORE_THRESHOLD:
             self.crm_action = PRIORITY_SALES_ROUTE
+
+    def eval_meaningful_intent(self, prompt):
+        """
+        Attempts to piggy-back on previous intent extraction by validating that the
+        captured intent seems meaninful (and therefor incrementing the lead score).
+        Reasoning is captured/printed to help users debug.
+        """
+        if self.enriched_data.intent != None:
+            response = client.models.generate_content(
+                model=LLM_MODEL,
+                contents=prompt + self.enriched_data.intent, # could alternatively be the raw note
+                config={
+                    "response_mime_type": "application/json",
+                    "response_json_schema": MeaningfulIntent.model_json_schema(),
+                },  
+            )
+            intent = MeaningfulIntent.model_validate_json(response.text)
+            if (intent.is_meaningful):
+                self.score += 10
+                print("Intent detected: " + intent.reasoning)
+            else:
+                print("No intent detected for this lead: " + intent.reasoning)

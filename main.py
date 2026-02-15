@@ -1,9 +1,11 @@
 import json
+import pprint
 from pydantic import ValidationError, validate_call
 from models import RawLead, EnrichedLead
 
 ENRICHMENT_PROMPT = "Determine the Industry of the company, Size of the company in number of employees, and the Lead's intent based upon the following description submitted by the Lead: "
 ENRICHMENT_ASSUMPTIONS = " Assume the size of the company is greater than 0."
+MEANINGFUL_INTENT_PROMPT = "Determine if the following Lead has meaningful intent. Look for helpful keywords, like need, interested, looking, or verbs indicating what is needed : "
 
 def load():
     """
@@ -44,9 +46,12 @@ def enrich(raw_lead: RawLead):
     :type raw_lead: RawLead
     """
     enriched_lead = EnrichedLead(id=raw_lead.id, email=raw_lead.email)
+    print("Enriching Lead Data for " + enriched_lead.id + "...")
     enriched_lead.enrich_data(raw_lead.raw_note, ENRICHMENT_PROMPT, ENRICHMENT_ASSUMPTIONS)
     enriched_lead.calculate_score()
     enriched_lead.determine_crm_action()
+    print("Evaluating Meaningful Intent...")
+    enriched_lead.eval_meaningful_intent(MEANINGFUL_INTENT_PROMPT)
     return enriched_lead
     
 def run():
@@ -61,7 +66,6 @@ def run():
 
     # TODO: expand to list - single lead for testing
     enriched_lead = enrich(raw_leads[0])
-
-    print(enriched_lead)
+    pprint.pp(enriched_lead.model_dump(mode='json'))
 
 run()
