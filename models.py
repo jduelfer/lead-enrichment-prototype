@@ -1,3 +1,4 @@
+from google import genai
 from pydantic import BaseModel, PositiveInt
 from typing import Optional
 
@@ -6,6 +7,8 @@ VALUABLE_INDUSTRIES = ["Fintech"]
 SALES_SCORE_THRESHOLD = 70
 MARKETING_ROUTE = "marketing_route"
 PRIORITY_SALES_ROUTE = "PRIORITY_sales_route"
+
+client = genai.Client()
 
 class RawLead(BaseModel):
     id: str
@@ -23,6 +26,25 @@ class EnrichedLead(BaseModel):
     enriched_data: Optional[EnrichedData] = None
     score: int = 0
     crm_action: Optional[str] = MARKETING_ROUTE
+
+    def enrich_data(self, raw_note: str, prompt: str, assumptions: str):
+        """
+        Takes the raw, free-form text from the Lead's web form submission and
+        uses an LLM model to pull out enriched data. Uses Gemini's Structured
+        Outputs for data extraction and structured classification.
+        
+        :param raw_note: free-form text input submitted by lead
+        :type raw_note: str
+        """
+        response = client.models.generate_content(
+            model="gemini-3-flash-preview",
+            contents=prompt + raw_note + assumptions,
+            config={
+                "response_mime_type": "application/json",
+                "response_json_schema": EnrichedData.model_json_schema(),
+            },  
+        )
+        self.enriched_data = EnrichedData.model_validate_json(response.text)
 
     def __determine_industry_value(self):
         """
