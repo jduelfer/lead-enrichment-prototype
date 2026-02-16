@@ -17,9 +17,6 @@ def ingest(lead_data: list[dict]):
     """
     Ingests raw, unvalidated web form data and ensures it adheres to pydantic spec. Stores
     and returns invalid leads (malformed or unexpected JSON) for manual review.
-    
-    :param lead_data: Unvalidated web form submissions as a deserialized list of lead objects
-    :type lead_data: list[obj]
     """
     raw_leads, invalid_leads = [], []
     for lead in lead_data:
@@ -33,23 +30,22 @@ def ingest(lead_data: list[dict]):
 def enrich(config: Config, raw_lead: RawLead):
     """
     Enriches a web-form lead by combining LLM output and scoring data
-    to determine if a lead fits an Ideal Customer Profile.
-    
-    :param raw_lead: web-form submitted lead
-    :type raw_lead: RawLead
+    to determine if a lead fits an Ideal Customer Profile. Stores any exception
+    during enrichment for futher review.
     """
     enriched_lead = EnrichedLead(id=raw_lead.id, email=raw_lead.email)
     lead_exception = None
     try:
-        enriched_lead.enrich_data(raw_lead.raw_note, config.enrichmentPrompt, config.enrichmentAssumptions)
+        prompt = config.enrichment_prompt + raw_lead.raw_note + config.enrichment_assumptions 
+        enriched_lead.enrich_data(config.llm, prompt)
     except Exception as e:
         lead_exception = e
 
     if enriched_lead.enriched_data != None:
         enriched_lead.calculate_score()
-        enriched_lead.determine_crm_action()
+        enriched_lead.determine_crm_action(config)
         try:
-            enriched_lead.eval_meaningful_intent(config.meaningfulIntentPrompt)
+            enriched_lead.eval_meaningful_intent(config)
         except Exception as e:
             lead_exception = e
     return enriched_lead, lead_exception

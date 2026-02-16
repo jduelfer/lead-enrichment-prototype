@@ -1,18 +1,19 @@
-from pydantic import BaseModel, PositiveInt
+from pydantic import BaseModel, PositiveInt, validate_call
 from genai import prompt_gemini
 from typing import Optional
 
 HIGH_VALUE_INDUSTRIES = ["Cybersecurity", "AI"]
 VALUABLE_INDUSTRIES = ["Fintech"]
-SALES_SCORE_THRESHOLD = 70
 MARKETING_ROUTE = "marketing_route"
-PRIORITY_SALES_ROUTE = "PRIORITY_sales_route"
-LLM_MODEL = "gemini-3-flash-preview"
 
 class Config(BaseModel):
-    enrichmentPrompt: str
-    enrichmentAssumptions: str
-    meaningfulIntentPrompt: str
+    enrichment_prompt: str
+    enrichment_assumptions: str
+    llm: str
+    meaningful_intent_prompt: str
+    meaningful_intent_score: int
+    priority_sales_route: str
+    priority_sales_threshold: int
 
 class RawLead(BaseModel):
     id: str
@@ -33,18 +34,15 @@ class EnrichedLead(BaseModel):
     email: str
     enriched_data: Optional[EnrichedData] = None
     score: int = 0
-    crm_action: Optional[str] = MARKETING_ROUTE
+    crm_action: str = MARKETING_ROUTE
 
-    def enrich_data(self, raw_note: str, prompt: str, assumptions: str):
+    def enrich_data(self, llm: str, prompt: str):
         """
         Takes the raw, free-form text from the Lead's web form submission and
         uses an LLM model to pull out enriched data. Uses Gemini's Structured
         Outputs for data extraction and structured classification.
-        
-        :param raw_note: free-form text input submitted by lead
-        :type raw_note: str
         """
-        self.enriched_data = prompt_gemini(prompt + raw_note + assumptions, EnrichedData)
+        self.enriched_data = prompt_gemini(llm, prompt, EnrichedData)
 
     def __determine_industry_value(self):
         """
@@ -58,7 +56,7 @@ class EnrichedLead(BaseModel):
 
     def __determine_size_fit(self):
         """
-        Increments score if the extracted company size
+        Increments score if the extracted company size is within the applicable threshold.
         TODO thresholds could be integer keys with scores as values
         """
         if self.enriched_data.size != None:
@@ -72,14 +70,16 @@ class EnrichedLead(BaseModel):
             self.__determine_industry_value()
             self.__determine_size_fit()
 
-    def determine_crm_action(self):
+    @validate_call
+    def determine_crm_action(self, config: Config):
         """
-        Assumes all leads are assigned to marketing unless threshold is surpassed
+        Assumes all leads are assigned to default unless threshold is surpassed
         """
-        if self.score > SALES_SCORE_THRESHOLD:
-            self.crm_action = PRIORITY_SALES_ROUTE
+        if self.score > config.priority_sales_threshold:
+            self.crm_action = config.priority_sales_route
 
-    def eval_meaningful_intent(self, prompt):
+    @validate_call
+    def eval_meaningful_intent(self, config: Config):
         """
         Attempts to piggy-back on previous intent extraction by validating that the
         captured intent seems meaningful (and therefor incrementing the lead score).
@@ -87,6 +87,6 @@ class EnrichedLead(BaseModel):
         """
         if self.enriched_data.intent != None:
             # could alternatively pass in the raw_note instead of already processed intent
-            intent = prompt_gemini(prompt + self.enriched_data.intent, MeaningfulIntent)
+            intent = prompt_gemini(config.llm, config.meaningful_intent_prompt + self.enriched_data.intent, MeaningfulIntent)
             if (intent.is_meaningful):
-                self.score += 10
+                self.score += config.meaningful_intent_score
