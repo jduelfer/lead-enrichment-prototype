@@ -47,6 +47,7 @@ class EnrichedLead(BaseModel):
     def __determine_industry_value(self, config: Config):
         """
         Increments score based upon the Lead's extracted industry (sector)
+        TODO: make sure LLM knows to return exact keys and capitalization
         """
         if self.enriched_data.industry != None and self.enriched_data.industry in config.industry_score:
             self.score += config.industry_score[self.enriched_data.industry]
@@ -54,7 +55,7 @@ class EnrichedLead(BaseModel):
     def __determine_size_fit(self):
         """
         Increments score if the extracted company size is within the applicable threshold.
-        TODO thresholds could be integer keys with scores as values
+        TODO implement company size config - ran out of time
         """
         if self.enriched_data.size != None:
             if self.enriched_data.size > 100:

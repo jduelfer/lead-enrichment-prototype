@@ -57,6 +57,7 @@ def run():
 
     enriched_leads, requiring_review = [], []
     for raw_lead in raw_leads:
+        print("Enriching lead " + raw_lead.id)
         enriched_lead, lead_exception = enrich(config, raw_lead)
         if lead_exception != None:
             print("Issue encountered enriching lead with id " + raw_lead.id)
