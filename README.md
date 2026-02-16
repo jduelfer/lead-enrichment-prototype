@@ -1,26 +1,35 @@
 # Lead Enrichment Prototype
-This prototype uses Google's Gemini API to ingest and enrich sample lead data.
+This prototype uses Google's Gemini API to ingest and enrich sample lead data. Furthermore, it uses [Structured Outputs](https://ai.google.dev/gemini-api/docs/structured-output?example=recipe) model capability to "ensure predicatable, type-safe results and simplifies extracting structured data from unstructured text." A scoring system is implemented to quickly score, rank, and filter leads based upon a set of criteria. 
+
+## Before you begin
+- You'll need a [Gemini API Key](https://aistudio.google.com/app/apikey) availble through Google's AI Studio. You can generate one for free and execute the script a couple times before hitting limits.
+- Ensure at least Python 3.9+ is installed (required by the [google-genai python library](https://pypi.org/project/google-genai/)).
+    - Helpful instructions if using WSL (Windows Subsystem for Linux): https://learn.microsoft.com/en-us/windows/python/web-frameworks
 
 ## Install Instructions
-These instructions have been validated on Windows Subsystem for Linux (WSL) Ubuntu 20.04.6 LTS and assume **python3.9** is installed (and assume `python3.9` is the current alias). Please adapt the installation and usage instructions to your own system as aliases as applicable (_and apologies of these versions that haved reached, or are approaching, EOL - some project dependencies have kept my Ubuntu version frozen_):
+These instructions have been validated on the following systems:
+- Ubuntu 22.05.5 LTS with Python 3.10
+- Ubuntu 20.04.6 LTS with Python 3.9 (_EOL - not recommended_)
 
-1. Create a virtual environment: `python3.9 -m venv .venv`
+Please adapt the installation and usage instructions to your own system and aliases as applicable (your default python version may have a different alias than `python3`, so change as applicable):
+
+1. Create a virtual environment: `python3 -m venv .venv`
 2. Activate virtual environment: `source .venv/bin/activate`
-3. Install [Google GenAI SDK](https://ai.google.dev/gemini-api/docs/quickstart): `pip3.9 install -q -U google-genai`
-4. Install [Pydantic](https://docs.pydantic.dev/latest/#why-use-pydantic): `pip3.9 install pydantic`
+3. Install [Google GenAI SDK](https://ai.google.dev/gemini-api/docs/quickstart): `pip3 install -q -U google-genai`
+4. Install [Pydantic](https://docs.pydantic.dev/latest/#why-use-pydantic): `pip3 install pydantic`
 5. Deactivate the virtualenv: `deactivate`. We're going to set some env variables.
 6. Within `.venv/bin/activate`, add the following lines (to the bottom is easiest):
     ```bash
-    export PYTHONWARNINGS="ignore" # supresses warnings around python3.9 set up on the computer I perfomed the challenge on
+    export PYTHONWARNINGS="ignore" # supresses warnings around python3 set up on the computer I perfomed the challenge on
     export GEMINI_API_KEY=<api_key> # <api_key> will be supplied separately and must be replaced
     ```
 7. Reactivate the virtualenv: `source .venv/bin/activate`
-8. Test installation by running `python3.9 test.py`. You should get a nice poem to think about.
+8. Test installation by running `python3 haiku.py`. You should get a nice poem to think about.
 
 ## Usage Instructions
 From the root of the project, simply run:
 ```bash
-python3.9 main.py
+python3 main.py
 ```
 
 ## Timebox and Next Steps
