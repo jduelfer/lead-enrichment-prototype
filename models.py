@@ -2,13 +2,12 @@ from pydantic import BaseModel, PositiveInt, validate_call
 from genai import prompt_gemini
 from typing import Optional
 
-HIGH_VALUE_INDUSTRIES = ["Cybersecurity", "AI"]
-VALUABLE_INDUSTRIES = ["Fintech"]
 MARKETING_ROUTE = "marketing_route"
 
 class Config(BaseModel):
     enrichment_prompt: str
     enrichment_assumptions: str
+    industry_score: dict[str, int]
     llm: str
     meaningful_intent_prompt: str
     meaningful_intent_score: int
@@ -44,15 +43,13 @@ class EnrichedLead(BaseModel):
         """
         self.enriched_data = prompt_gemini(llm, prompt, EnrichedData)
 
-    def __determine_industry_value(self):
+    @validate_call
+    def __determine_industry_value(self, config: Config):
         """
         Increments score based upon the Lead's extracted industry (sector)
-        TODO improve by establishing a dictionary with key/values
         """
-        if self.enriched_data.industry in HIGH_VALUE_INDUSTRIES:
-            self.score += 50
-        elif self.enriched_data.industry in VALUABLE_INDUSTRIES:
-            self.score += 25
+        if self.enriched_data.industry != None and self.enriched_data.industry in config.industry_score:
+            self.score += config.industry_score[self.enriched_data.industry]
 
     def __determine_size_fit(self):
         """
@@ -65,9 +62,10 @@ class EnrichedLead(BaseModel):
             elif self.enriched_data.size >= 10:
                 self.score += 10
 
-    def calculate_score(self):
+    @validate_call
+    def calculate_score(self, config: Config):
         if self.enriched_data != None:
-            self.__determine_industry_value()
+            self.__determine_industry_value(config)
             self.__determine_size_fit()
 
     @validate_call

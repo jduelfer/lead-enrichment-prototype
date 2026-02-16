@@ -42,7 +42,7 @@ def enrich(config: Config, raw_lead: RawLead):
         lead_exception = e
 
     if enriched_lead.enriched_data != None:
-        enriched_lead.calculate_score()
+        enriched_lead.calculate_score(config)
         enriched_lead.determine_crm_action(config)
         try:
             enriched_lead.eval_meaningful_intent(config)

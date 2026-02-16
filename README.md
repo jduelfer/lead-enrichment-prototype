@@ -39,19 +39,16 @@ Here on some helpful notes on extending this codebase for various use cases:
 - `leads.json` can be replaced with a list of JSON objects that adheres to the RawLead model defined in `models.py`
 
 ## Timebox and Next Steps
-Given the time-box of 3-4 hours, my focus was on the core problem of enriching lead data via an LLM and validating an initial prototype. Future "backend dev" tasks to professionalize this agent would be:
+Given the time-box of 3-4 hours, my focus was on the core problem of enriching lead data via an LLM and validating an initial prototype. Future tasks to professionalize this agent would be:
 1. Support command line arguments for the following:
-    - `file`: easily load alternative data sets by specifying a path
-    - `prompts`: support customization of prompts 
-2. Improved scoring data models to better support configuration:
-    - first step would be key/value dicts, such as `industry => score`
-    - next step would be to load all scoring as its own model, such as an easily editable JSON file or similar.
-3. Abstract _all_ configuration into a loadable object that would easily support an "Admin Portal" that could allow the Agent to be updated without pushing code and by super users.
+    - `leads.json`: easily load alternative data sets
+    - `config.json`: support different configurations, including alternative LLMs
+2. Implement an "Admin Portal" that provides end-users with the ability to easily change configuration without needing to change the code
 4. For invalid leads (whether malformed JSON or failed responses during enrichment) prompt the user to manually evaluate and fix (prompt inputs, for example),
     - Futher down the line, these could be stored for review in the "Admin Portal" asynchronously.
 5. Code cleanup:
-    - Remove print statements - implement logging
-    - Further elaborate on types and validations
+    - Remove all print statements and implement logging
+    - Further elaborate on types and validations, including function return types
     - Better exception handling via types of errors 
 
-_Reminder to please consider this an initial prototype to evaluate solution design and technical approach limited to a few hours of development._ Python is also not my principal programming language, so please excuse the lack of best practices and common code conventions.
+_Reminder to please consider this an initial prototype to evaluate solution design and technical approach limited to a few hours of development._ Python is also not my principal programming language, so please excuse the lack of best practices and common code conventions that I might be overlooking while focusing on a working prototype.
