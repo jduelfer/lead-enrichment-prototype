@@ -32,6 +32,12 @@ From the root of the project, simply run:
 python3 main.py
 ```
 
+## Extensability
+Here on some helpful notes on extending this codebase for various use cases:
+- `config.json` can be easily edited to modify various configuration variables, such as the LLM prompts, scoring criteria, and more
+- `genai.py` looks to abstract any Gemini-specific implementation to facilitate adding or replacing alternatives LLMs (Claude, GPT, etc.) that have their own SDKs or methods of integration.
+- `leads.json` can be replaced with a list of JSON objects that adheres to the RawLead model defined in `models.py`
+
 ## Timebox and Next Steps
 Given the time-box of 3-4 hours, my focus was on the core problem of enriching lead data via an LLM and validating an initial prototype. Future "backend dev" tasks to professionalize this agent would be:
 1. Support command line arguments for the following:

@@ -1,0 +1,5 @@
+{
+    "enrichmentPrompt" : "Determine the Industry of the company, Size of the company in number of employees, and the Lead's intent based upon the following description submitted by the Lead: ",
+    "enrichmentAssumptions" : "Assume the size of the company is greater than 0.",
+    "meaningfulIntentPrompt" : "Determine if the following Lead has meaningful intent. Look for helpful keywords, like need, interested, looking, or verbs indicating what is needed : "
+}

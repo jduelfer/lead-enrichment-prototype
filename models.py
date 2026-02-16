@@ -1,5 +1,5 @@
-from google import genai
 from pydantic import BaseModel, PositiveInt
+from genai import prompt_gemini
 from typing import Optional
 
 HIGH_VALUE_INDUSTRIES = ["Cybersecurity", "AI"]
@@ -9,7 +9,10 @@ MARKETING_ROUTE = "marketing_route"
 PRIORITY_SALES_ROUTE = "PRIORITY_sales_route"
 LLM_MODEL = "gemini-3-flash-preview"
 
-client = genai.Client()
+class Config(BaseModel):
+    enrichmentPrompt: str
+    enrichmentAssumptions: str
+    meaningfulIntentPrompt: str
 
 class RawLead(BaseModel):
     id: str
@@ -41,15 +44,7 @@ class EnrichedLead(BaseModel):
         :param raw_note: free-form text input submitted by lead
         :type raw_note: str
         """
-        response = client.models.generate_content(
-            model=LLM_MODEL,
-            contents=prompt + raw_note + assumptions,
-            config={
-                "response_mime_type": "application/json",
-                "response_json_schema": EnrichedData.model_json_schema(),
-            },  
-        )
-        self.enriched_data = EnrichedData.model_validate_json(response.text)
+        self.enriched_data = prompt_gemini(prompt + raw_note + assumptions, EnrichedData)
 
     def __determine_industry_value(self):
         """
@@ -69,7 +64,7 @@ class EnrichedLead(BaseModel):
         if self.enriched_data.size != None:
             if self.enriched_data.size > 100:
                 self.score += 25
-            elif self.enriched_data.size > 10:
+            elif self.enriched_data.size >= 10:
                 self.score += 10
 
     def calculate_score(self):
@@ -87,21 +82,11 @@ class EnrichedLead(BaseModel):
     def eval_meaningful_intent(self, prompt):
         """
         Attempts to piggy-back on previous intent extraction by validating that the
-        captured intent seems meaninful (and therefor incrementing the lead score).
-        Reasoning is captured/printed to help users debug.
+        captured intent seems meaningful (and therefor incrementing the lead score).
+        Reasoning is stored for debugging in future cases.
         """
         if self.enriched_data.intent != None:
-            response = client.models.generate_content(
-                model=LLM_MODEL,
-                contents=prompt + self.enriched_data.intent, # could alternatively be the raw note
-                config={
-                    "response_mime_type": "application/json",
-                    "response_json_schema": MeaningfulIntent.model_json_schema(),
-                },  
-            )
-            intent = MeaningfulIntent.model_validate_json(response.text)
+            # could alternatively pass in the raw_note instead of already processed intent
+            intent = prompt_gemini(prompt + self.enriched_data.intent, MeaningfulIntent)
             if (intent.is_meaningful):
                 self.score += 10
-                print("Intent detected for " + self.id + ": "  + intent.reasoning)
-            else:
-                print("No intent detected for " + self.id + ": " + intent.reasoning)
